@@ -155,7 +155,7 @@ Setelah online, buka `https://ALAMAT-BACKEND/api/health` → harus `"ok": true`.
 1. Vercel → *Add New → Project* → impor repo `Save-VIdeo` (framework Next.js terdeteksi otomatis, tanpa pengaturan build tambahan).
 2. *Settings → Environment Variables*:
    - `NEXT_PUBLIC_API_BASE` = `https://ALAMAT-BACKEND` (tanpa `/` di akhir)
-   - `NEXT_PUBLIC_SITE_URL` = `https://NAMA-PROJECT.vercel.app` (atau domain custom)
+   - `NEXT_PUBLIC_SITE_URL` = domain custom (opsional — tanpa ini otomatis memakai domain produksi Vercel)
    - (opsional) `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — secret key-nya dipasang di backend
 3. *Deployments → Redeploy* (variabel `NEXT_PUBLIC_*` di-inline saat build, jadi wajib build ulang).
 

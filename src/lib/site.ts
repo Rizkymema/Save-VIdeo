@@ -1,7 +1,12 @@
 export const SITE_NAME = "SaveLink";
 
-/** URL publik (di-inline saat build). Set NEXT_PUBLIC_SITE_URL saat build production. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+/** Domain produksi dari Vercel (otomatis tersedia saat build di Vercel). */
+const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
+
+/** URL publik (di-inline saat build). NEXT_PUBLIC_SITE_URL > domain Vercel > localhost. */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || (VERCEL_URL ? `https://${VERCEL_URL}` : "http://localhost:3000")
+).replace(/\/+$/, "");
 
 export function absoluteUrl(path = "/"): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
