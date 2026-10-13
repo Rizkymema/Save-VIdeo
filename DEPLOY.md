@@ -6,10 +6,11 @@ SaveLink terdiri dari **UI** (halaman web) dan **mesin download** (yt-dlp + ffmp
 
 | Opsi | UI | Mesin download | Cocok untuk |
 |---|---|---|---|
-| **A. VPS (Docker Compose)** — bagian 1–10 | VPS | VPS | Paling stabil & murah untuk dipakai rutin |
-| **B. Vercel + backend Docker** — bagian 11 | Vercel (otomatis dari GitHub) | Render / Railway / VPS (otomatis dari GitHub) | Sudah punya Vercel & tidak mau mengurus server |
+| **A. VPS (Docker Compose)** — bagian 1–10 | VPS | VPS | Paling stabil; video panjang & 4K, progress real-time |
+| **B. Vercel + backend Docker** — bagian 11 | Vercel | Render / Railway / VPS | UI di Vercel, unduhan berat di server sendiri |
+| **C. Semua di Vercel (mode direct)** — bagian 13 | Vercel | Vercel Functions | Paling praktis: cukup `git push`, tanpa server |
 
-> **Vercel saja tidak cukup.** Function Vercel tidak punya yt-dlp/ffmpeg, dibatasi durasinya (merge video HD bisa berjalan beberapa menit), request progress & unduhan bisa jatuh ke instance berbeda (job tersimpan di memori), dan IP Vercel/AWS sangat sering diblokir YouTube. Bila UI di Vercel dipakai tanpa backend, pengguna akan melihat pesan *"Mesin download di server ini belum aktif"*.
+> **Mode direct (opsi C)** dipakai otomatis saat build di Vercel: binary yt-dlp + ffmpeg Linux dibundel ke function, dan setiap unduhan diproses lalu dikirim dalam **satu request**. Konsekuensinya: tanpa persentase progress (hanya "menyiapkan file…"), batas total **300 detik** per unduhan di paket Hobby (proses + kirim), ukuran file maks **250 MB** (`DIRECT_MAX_FILESIZE_MB`), dan IP Vercel/AWS kadang diblokir YouTube. Cocok untuk TikTok, Reels, Shorts, dan video pendek–menengah; untuk 4K/video panjang pakai opsi A atau B.
 
 ---
 
@@ -161,7 +162,21 @@ Setelah online, buka `https://ALAMAT-BACKEND/api/health` → harus `"ok": true`.
 
 Cek: buka situs Vercel → tempel link → info video muncul. Di DevTools → Network, request `api/info` harus mengarah ke alamat backend.
 
-## 12. Checklist go-live
+---
+
+# Opsi C — Semua di Vercel (mode direct)
+
+## 13. Langkah
+
+1. Vercel → *Add New → Project* → impor repo `Save-VIdeo` → *Deploy*. Tidak perlu pengaturan tambahan:
+   - `npm run build` menjalankan `scripts/fetch-binaries.mjs` → mengunduh **yt-dlp** (resmi, sudah termasuk pemecah tantangan YouTube & curl_cffi untuk TikTok) dan **ffmpeg** statis ke `vendor/bin`, lalu `next.config.ts` (`outputFileTracingIncludes`) mengikutkannya ke function API.
+   - Di Vercel otomatis: `DOWNLOAD_MODE=direct`, JS runtime YouTube = Node.js function, cache yt-dlp di `/tmp`, region **sin1 (Singapura)** dari `vercel.json`.
+2. Cek `https://DOMAIN-VERCEL/api/health` → `"ok": true`, `"mode": "direct"`, versi `ytdlp` & `ffmpeg`, `jsRuntime: "node …"`.
+3. Opsional (*Settings → Environment Variables*): `DIRECT_MAX_FILESIZE_MB`, `DIRECT_TIMEOUT_SEC`, `YTDLP_PROXY` (bila YouTube memblokir IP Vercel), `NEXT_PUBLIC_SITE_URL` (domain custom). Lalu *Redeploy*.
+
+Cara kerja di browser: tombol kualitas membuka `/api/download?...` sebagai navigasi biasa. Server memproses, lalu mengirim file (`Content-Disposition: attachment`) atau — bila gagal — menjawab `204` sehingga halaman tidak berpindah. Hasilnya dikabarkan lewat cookie singkat `sl_dl_<token>` yang dipantau halaman (lihat `src/lib/download-cookie.ts`). File sementara di `/tmp` dihapus segera setelah terkirim.
+
+## 14. Checklist go-live
 
 - [ ] `/api/health` → `ok: true` (yt-dlp, ffmpeg, deno terdeteksi)
 - [ ] Smoke test YouTube, TikTok, Instagram, Facebook, X dari domain publik

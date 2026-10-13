@@ -17,11 +17,16 @@ export function ReadyPanel({
   progress,
   onAnotherQuality,
   onNewLink,
+  direct = false,
+  onSaveAgain,
 }: {
   jobId: string;
   progress: JobProgress;
   onAnotherQuality: () => void;
   onNewLink: () => void;
+  /** Mode direct: file sudah dikirim & tidak disimpan di server → "Unduh lagi" memproses ulang. */
+  direct?: boolean;
+  onSaveAgain?: () => void;
 }) {
   const { dict, t, locale } = useI18n();
   const ios = useSyncExternalStore(noop, isAppleMobile, () => false);
@@ -33,7 +38,7 @@ export function ReadyPanel({
         <CheckCircle weight="fill" className="size-7 shrink-0 text-success" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="font-semibold" role="status">
-            {dict.ready.title}
+            {direct ? dict.ready.directTitle : dict.ready.title}
           </p>
           {progress.fileName && (
             <p className="mt-0.5 truncate text-sm text-foreground/90" title={progress.fileName}>
@@ -41,17 +46,24 @@ export function ReadyPanel({
               {size && <span className="font-mono text-muted-foreground"> · {size}</span>}
             </p>
           )}
-          <p className="mt-1 text-sm text-muted-foreground">{dict.ready.subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{direct ? dict.ready.directSubtitle : dict.ready.subtitle}</p>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <Button asChild size="lg" className="sm:min-w-44">
-          <a href={fileUrl(jobId)} download={progress.fileName ?? ""}>
+        {direct ? (
+          <Button size="lg" className="sm:min-w-44" onClick={onSaveAgain}>
             <DownloadSimple weight="bold" aria-hidden />
-            {dict.ready.save}
-          </a>
-        </Button>
+            {dict.ready.again}
+          </Button>
+        ) : (
+          <Button asChild size="lg" className="sm:min-w-44">
+            <a href={fileUrl(jobId)} download={progress.fileName ?? ""}>
+              <DownloadSimple weight="bold" aria-hidden />
+              {dict.ready.save}
+            </a>
+          </Button>
+        )}
         <Button variant="outline" size="lg" onClick={onAnotherQuality}>
           <ArrowCounterClockwise weight="bold" aria-hidden />
           {dict.ready.another}
@@ -63,7 +75,7 @@ export function ReadyPanel({
       </div>
 
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        {t(dict.ready.expires, { minutes: 30 })}
+        {direct ? dict.ready.directNote : t(dict.ready.expires, { minutes: 30 })}
         {ios && <span className="mt-1 block">{dict.ready.ios}</span>}
       </p>
     </div>

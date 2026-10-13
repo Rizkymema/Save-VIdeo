@@ -1,7 +1,16 @@
 import "server-only";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
+
+/** Di Vercel: binary Linux dibundel ke vendor/bin (lihat scripts/fetch-binaries.mjs). */
+const ON_VERCEL = process.env.VERCEL === "1";
+
+function vendorBinary(name: string): string | undefined {
+  const candidate = path.join(process.cwd(), "vendor", "bin", name);
+  return fs.existsSync(candidate) ? candidate : undefined;
+}
 
 const emptyToUndefined = (v: unknown) => (v === "" || v === undefined || v === null ? undefined : v);
 
@@ -24,12 +33,26 @@ const bool = (def: boolean) =>
   }, z.boolean().default(def));
 
 const schema = z.object({
-  YTDLP_PATH: str("yt-dlp"),
+  YTDLP_PATH: str(vendorBinary("yt-dlp") ?? "yt-dlp"),
   /** Kosong = cari ffmpeg di PATH. */
-  FFMPEG_PATH: str(),
-  /** Diteruskan ke `--js-runtimes`, dipisah koma. Contoh: "deno" atau "deno:/usr/local/bin/deno". */
-  YTDLP_JS_RUNTIMES: str(),
+  FFMPEG_PATH: str(vendorBinary("ffmpeg") ?? ""),
+  /**
+   * Diteruskan ke `--js-runtimes`, dipisah koma. Contoh: "deno" atau "deno:/usr/local/bin/deno".
+   * Di Vercel tidak ada Deno → pakai Node.js milik function itu sendiri.
+   */
+  YTDLP_JS_RUNTIMES: str(ON_VERCEL ? `node:${process.execPath}` : ""),
+  /** Folder cache yt-dlp (di Vercel HOME tidak bisa ditulis → /tmp). Kosong = default yt-dlp. */
+  YTDLP_CACHE_DIR: str(ON_VERCEL ? path.join(os.tmpdir(), "yt-dlp-cache") : ""),
   DOWNLOAD_DIR: str(path.join(os.tmpdir(), "savelink")),
+  /**
+   * "jobs" = antrean + progress SSE (server Docker/VPS yang hidup terus).
+   * "direct" = satu request: proses lalu langsung kirim file (serverless/Vercel).
+   */
+  DOWNLOAD_MODE: z.preprocess(emptyToUndefined, z.enum(["jobs", "direct"]).default(ON_VERCEL ? "direct" : "jobs")),
+  /** Mode direct: batas waktu proses yt-dlp (sisanya untuk mengirim file; Vercel Hobby total 300 dtk). */
+  DIRECT_TIMEOUT_SEC: int(220, 30, 3600),
+  /** Mode direct: batas ukuran file agar sempat terkirim sebelum function dihentikan. */
+  DIRECT_MAX_FILESIZE_MB: int(250, 1),
   MAX_CONCURRENT_JOBS: int(3, 1, 64),
   MAX_JOBS_PER_IP: int(2, 1, 64),
   MAX_QUEUE_LENGTH: int(30, 1, 10_000),

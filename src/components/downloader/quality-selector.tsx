@@ -18,10 +18,13 @@ export function QualitySelector({
   options,
   onSelect,
   disabled,
+  limitMb,
 }: {
   options: QualityOption[];
   onSelect: (option: QualityOption) => void;
   disabled?: boolean;
+  /** Mode direct: batas ukuran server untuk pesan opsi yang terlalu besar. */
+  limitMb?: number;
 }) {
   const { dict } = useI18n();
   const video = options.filter((o) => o.kind === "video");
@@ -42,7 +45,7 @@ export function QualitySelector({
           <m.ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3" variants={list} initial="hidden" animate="show">
             {video.map((option) => (
               <m.li key={option.preset} variants={itemVariants}>
-                <OptionButton option={option} onSelect={onSelect} disabled={disabled} />
+                <OptionButton option={option} onSelect={onSelect} disabled={disabled} limitMb={limitMb} />
               </m.li>
             ))}
           </m.ul>
@@ -62,7 +65,7 @@ export function QualitySelector({
           <m.ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3" variants={list} initial="hidden" animate="show">
             {audio.map((option) => (
               <m.li key={option.preset} variants={itemVariants}>
-                <OptionButton option={option} onSelect={onSelect} disabled={disabled} />
+                <OptionButton option={option} onSelect={onSelect} disabled={disabled} limitMb={limitMb} />
               </m.li>
             ))}
           </m.ul>
@@ -76,10 +79,12 @@ function OptionButton({
   option,
   onSelect,
   disabled,
+  limitMb,
 }: {
   option: QualityOption;
   onSelect: (option: QualityOption) => void;
   disabled?: boolean;
+  limitMb?: number;
 }) {
   const { dict, t, locale } = useI18n();
   const size = formatBytes(option.approxBytes, locale);
@@ -90,8 +95,9 @@ function OptionButton({
     option.hdr ? dict.quality.hdr : undefined,
   ].filter(Boolean);
 
-  const note =
-    option.kind === "audio"
+  const note = option.tooLarge
+    ? t(dict.quality.tooLarge, { maxMb: limitMb ?? "?" })
+    : option.kind === "audio"
       ? option.preset === "audio-m4a"
         ? dict.quality.audioM4a
         : dict.quality.audioMp3
@@ -105,7 +111,7 @@ function OptionButton({
     <button
       type="button"
       onClick={() => onSelect(option)}
-      disabled={disabled}
+      disabled={disabled || option.tooLarge}
       aria-label={t(
         dict.quality.downloadAria,
         option.kind === "audio"

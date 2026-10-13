@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { env } from "@/lib/env";
 import { AppError, makeApiError } from "@/lib/errors";
-import { contentTypeForExt, safeFileBase } from "@/lib/filename";
+import { contentTypeForExt, downloadFileName } from "@/lib/filename";
 import {
   downloadDir,
   findOutputFile,
@@ -112,13 +112,6 @@ function finishWithError(job: Job, error: ReturnType<typeof makeApiError>): void
   state.running.delete(job.id);
   void removeJobFiles(job.id);
   pump();
-}
-
-function buildFileName(job: Job, title: string, ext: string): string {
-  const base = safeFileBase(title);
-  const isVideo = !job.preset.startsWith("audio");
-  const suffix = isVideo && job.qualityLabel && job.qualityLabel !== "Auto" ? ` (${job.qualityLabel})` : "";
-  return `${base}${suffix}.${ext}`;
 }
 
 async function runJob(job: Job): Promise<void> {
@@ -230,7 +223,10 @@ async function runJob(job: Job): Promise<void> {
   job.filePath = filePath;
   job.fileSize = stat.size;
   job.contentType = contentTypeForExt(ext);
-  job.fileName = buildFileName(job, job.title || ytdlpTitle || "video", ext);
+  job.fileName = downloadFileName(job.title || ytdlpTitle || "video", ext, {
+    audio: job.preset.startsWith("audio"),
+    qualityLabel: job.qualityLabel,
+  });
   job.stage = "ready";
   job.percent = 100;
   job.speedBps = undefined;

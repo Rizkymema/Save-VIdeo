@@ -1,6 +1,7 @@
 import "server-only";
 import path from "node:path";
 import { env } from "@/lib/env";
+import { executablePath } from "@/lib/system";
 import { VIDEO_BUCKETS } from "@/constants/presets";
 import type { QualityPreset } from "@/types/video";
 
@@ -33,7 +34,8 @@ export function baseArgs(): string[] {
   for (const runtime of e.YTDLP_JS_RUNTIMES.split(",").map((s) => s.trim()).filter(Boolean)) {
     args.push("--js-runtimes", runtime);
   }
-  if (e.FFMPEG_PATH) args.push("--ffmpeg-location", e.FFMPEG_PATH);
+  if (e.FFMPEG_PATH) args.push("--ffmpeg-location", executablePath(e.FFMPEG_PATH));
+  if (e.YTDLP_CACHE_DIR) args.push("--cache-dir", e.YTDLP_CACHE_DIR);
   if (e.YTDLP_PROXY) args.push("--proxy", e.YTDLP_PROXY);
   if (e.YTDLP_COOKIES_FILE) args.push("--cookies", e.YTDLP_COOKIES_FILE);
   return args;
@@ -82,9 +84,11 @@ export interface DownloadArgsInput {
   item: number;
   jobId: string;
   outDir: string;
+  /** Default MAX_FILESIZE_MB; mode direct memakai batas yang lebih kecil. */
+  maxFilesizeMb?: number;
 }
 
-export function downloadArgs({ url, preset, item, jobId, outDir }: DownloadArgsInput): string[] {
+export function downloadArgs({ url, preset, item, jobId, outDir, maxFilesizeMb }: DownloadArgsInput): string[] {
   const e = env();
   return [
     ...baseArgs(),
@@ -100,7 +104,7 @@ export function downloadArgs({ url, preset, item, jobId, outDir }: DownloadArgsI
     "--print",
     `after_move:${MARK.done}%(filepath)j${MARK.sep}%(title)j`,
     "--max-filesize",
-    `${e.MAX_FILESIZE_MB}M`,
+    `${maxFilesizeMb ?? e.MAX_FILESIZE_MB}M`,
     "--playlist-items",
     String(item),
     "-o",

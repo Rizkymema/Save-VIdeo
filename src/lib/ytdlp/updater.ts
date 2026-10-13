@@ -2,7 +2,7 @@ import "server-only";
 import { env } from "@/lib/env";
 import { jobsState } from "@/lib/jobs/store";
 import { log } from "@/lib/log";
-import { invalidateVersionCache, runCommand } from "@/lib/system";
+import { executablePath, invalidateVersionCache, runCommand } from "@/lib/system";
 
 const DAY_MS = 24 * 60 * 60_000;
 const RETRY_WHEN_BUSY_MS = 10 * 60_000;
@@ -22,7 +22,7 @@ export function startAutoUpdate(): void {
   };
   const run = async () => {
     if (jobsState().running.size > 0) return schedule(RETRY_WHEN_BUSY_MS);
-    const result = await runCommand(env().YTDLP_PATH, ["-U"], 180_000);
+    const result = await runCommand(executablePath(env().YTDLP_PATH), ["-U"], 180_000);
     const output = (result.stdout + result.stderr).trim().split(/\r?\n/).slice(-3).join(" | ");
     state.last = { at: Date.now(), ok: result.ok, output };
     invalidateVersionCache();

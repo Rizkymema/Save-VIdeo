@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { env } from "@/lib/env";
 import { json } from "@/lib/http";
 import { freeDiskBytes, initJobs } from "@/lib/jobs/cleanup";
 import { queueStats } from "@/lib/jobs/queue";
@@ -17,9 +18,10 @@ export async function GET() {
   return json(
     {
       ok,
+      mode: env().DOWNLOAD_MODE,
       ytdlp: versions.ytdlp ?? null,
       ffmpeg: versions.ffmpeg ?? null,
-      deno: versions.deno ?? null,
+      jsRuntime: versions.jsRuntime ?? null,
       diskFreeMb: freeBytes !== undefined ? Math.round(freeBytes / 1024 / 1024) : null,
       queue: queueStats(),
       metrics: metricsSnapshot(),

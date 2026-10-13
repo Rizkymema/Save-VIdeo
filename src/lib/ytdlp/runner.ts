@@ -1,6 +1,7 @@
 import "server-only";
 import { spawn, type ChildProcess } from "node:child_process";
 import { env } from "@/lib/env";
+import { executablePath } from "@/lib/system";
 
 export interface RunOptions {
   timeoutMs: number;
@@ -69,7 +70,7 @@ export function runYtDlp(args: string[], opts: RunOptions): RunningProcess {
   const { YTDLP_PATH } = env();
   const maxStdout = opts.maxStdoutBytes ?? 32 * 1024 * 1024;
 
-  const child = spawn(YTDLP_PATH, args, {
+  const child = spawn(executablePath(YTDLP_PATH), args, {
     shell: false,
     windowsHide: true,
     detached: process.platform !== "win32",

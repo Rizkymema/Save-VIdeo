@@ -3,6 +3,7 @@
 import { AnimatePresence, LazyMotion, MotionConfig, m, type HTMLMotionProps } from "motion/react";
 import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type ReactNode } from "react";
 import { toast } from "sonner";
+import { DirectProgress } from "@/components/downloader/direct-progress";
 import { DownloadProgress } from "@/components/downloader/download-progress";
 import { ErrorState } from "@/components/downloader/error-state";
 import { HistoryList } from "@/components/downloader/history-list";
@@ -11,6 +12,7 @@ import { ReadyPanel } from "@/components/downloader/ready-panel";
 import { UrlInputForm } from "@/components/downloader/url-input-form";
 import { VideoPreviewCard } from "@/components/downloader/video-preview-card";
 import { VideoPreviewSkeleton } from "@/components/downloader/video-preview-skeleton";
+import { useDirectDownload } from "@/hooks/use-direct-download";
 import { fileUrl, useDownloadJob } from "@/hooks/use-download-job";
 import { useHistory } from "@/hooks/use-history";
 import { useTurnstile } from "@/hooks/use-turnstile";
@@ -30,6 +32,11 @@ const CARD =
 
 // Fitur animasi dimuat terpisah setelah halaman tampil (bundle awal lebih ringan).
 const loadMotionFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
+
+// Ditentukan saat build: Vercel → "direct" (satu request per unduhan),
+// Docker/VPS → "jobs" (antrean + progress real-time lewat SSE).
+const DIRECT_MODE = process.env.NEXT_PUBLIC_DOWNLOAD_MODE === "direct";
+const useDownloader = DIRECT_MODE ? useDirectDownload : useDownloadJob;
 
 /** Klik link unduhan secara programatik (file besar langsung ditangani browser, tidak lewat RAM). */
 function triggerDownload(href: string) {
@@ -59,7 +66,8 @@ export function Downloader({ placeholder, below }: { placeholder?: string; below
 
   const onReady = useCallback(
     (jobId: string, progress: JobProgress, option: QualityOption) => {
-      triggerDownload(fileUrl(jobId));
+      // Mode direct: browser sudah mengunduh lewat navigasi /api/download.
+      if (!DIRECT_MODE) triggerDownload(fileUrl(jobId));
       const info = latestInfo.current;
       if (info) {
         addHistory({
@@ -76,7 +84,7 @@ export function Downloader({ placeholder, below }: { placeholder?: string; below
     },
     [addHistory, dict.ready.toast, t],
   );
-  const { state: jobState, start, cancel, reset: resetJob } = useDownloadJob(onReady);
+  const { state: jobState, start, cancel, reset: resetJob } = useDownloader(onReady);
 
   const info = infoState.status === "ready" ? infoState.info : infoState.status === "loading" ? infoState.previous : undefined;
 
@@ -179,16 +187,31 @@ export function Downloader({ placeholder, below }: { placeholder?: string; below
   if (info) {
     switch (jobState.status) {
       case "starting":
-        jobPanel = <DownloadProgress option={jobState.option} onCancel={cancel} />;
-        break;
       case "active":
-        jobPanel = <DownloadProgress option={jobState.option} progress={jobState.progress} onCancel={cancel} />;
-        break;
-      case "ready":
-        jobPanel = (
-          <ReadyPanel jobId={jobState.jobId} progress={jobState.progress} onAnotherQuality={resetJob} onNewLink={newLink} />
+        jobPanel = DIRECT_MODE ? (
+          <DirectProgress option={jobState.option} onCancel={cancel} />
+        ) : (
+          <DownloadProgress
+            option={jobState.option}
+            progress={jobState.status === "active" ? jobState.progress : undefined}
+            onCancel={cancel}
+          />
         );
         break;
+      case "ready": {
+        const readyOption = jobState.option;
+        jobPanel = (
+          <ReadyPanel
+            jobId={jobState.jobId}
+            progress={jobState.progress}
+            onAnotherQuality={resetJob}
+            onNewLink={newLink}
+            direct={DIRECT_MODE}
+            onSaveAgain={() => void handleSelect(readyOption)}
+          />
+        );
+        break;
+      }
       case "error":
         jobPanel = (
           <ErrorState
@@ -206,7 +229,12 @@ export function Downloader({ placeholder, below }: { placeholder?: string; below
                 {dict.progress.canceled}
               </p>
             )}
-            <QualitySelector options={info.options} onSelect={(o) => void handleSelect(o)} disabled={loading} />
+            <QualitySelector
+              options={info.options}
+              onSelect={(o) => void handleSelect(o)}
+              disabled={loading}
+              limitMb={info.limitMb}
+            />
           </>
         );
     }

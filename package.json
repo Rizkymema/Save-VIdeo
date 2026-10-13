@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/fetch-binaries.mjs && next build",
     "start": "next start",
     "start:standalone": "node scripts/start-standalone.mjs",
     "lint": "eslint .",

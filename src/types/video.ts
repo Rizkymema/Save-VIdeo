@@ -38,6 +38,8 @@ export interface QualityOption {
   recommended?: boolean;
   /** true jika video & audio diunduh terpisah lalu digabung ffmpeg. */
   needsMerge?: boolean;
+  /** Mode direct (serverless): perkiraan ukuran melebihi batas server → tidak bisa dipilih. */
+  tooLarge?: boolean;
 }
 
 export interface CarouselItem {
@@ -61,6 +63,8 @@ export interface VideoInfo {
   /** Item yang sedang dipilih bila link berisi lebih dari satu video. */
   item: number;
   items?: CarouselItem[];
+  /** Mode direct: batas ukuran file (MB) yang bisa diproses server. */
+  limitMb?: number;
 }
 
 export type JobStage =

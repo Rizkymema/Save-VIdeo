@@ -13,6 +13,13 @@ export function safeFileBase(title: string, maxLength = 120): string {
   return base;
 }
 
+/** "Judul Video (1080p).mp4" untuk video, "Judul Video.mp3" untuk audio. */
+export function downloadFileName(title: string, ext: string, opts: { audio: boolean; qualityLabel?: string }): string {
+  const base = safeFileBase(title);
+  const suffix = !opts.audio && opts.qualityLabel && opts.qualityLabel !== "Auto" ? ` (${opts.qualityLabel})` : "";
+  return `${base}${suffix}.${ext}`;
+}
+
 function asciiFallback(name: string): string {
   const ascii = name
     .normalize("NFKD")

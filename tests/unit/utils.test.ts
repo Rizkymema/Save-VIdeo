@@ -7,7 +7,7 @@ import { clientError, errorMessage } from "@/lib/client-errors";
 import { contentDisposition, contentTypeForExt, safeFileBase } from "@/lib/filename";
 import { formatBytes, formatDuration, interpolate } from "@/lib/format";
 import { parseRange } from "@/lib/http";
-import { isPrivateAddress } from "@/lib/net";
+import { embeddedIpv4, evaluateAddresses, isPrivateAddress } from "@/lib/net";
 import { SlidingWindowLimiter } from "@/lib/rate-limit";
 import { isOptimizableThumbnail } from "@/lib/thumbnail-hosts";
 
@@ -112,6 +112,31 @@ describe("isPrivateAddress (anti-SSRF)", () => {
     ["bukan-ip", true],
   ])("%s → %s", (ip, expected) => {
     expect(isPrivateAddress(ip)).toBe(expected);
+  });
+});
+
+describe("evaluateAddresses (DNS → anti-SSRF, ramah NAT64)", () => {
+  it("IPv4 tertanam di IPv6", () => {
+    expect(embeddedIpv4("fd00:aa:bb:2050::1728:3fa7")).toBe("23.40.63.167");
+    expect(embeddedIpv4("64:ff9b::808:808")).toBe("8.8.8.8");
+    expect(embeddedIpv4("::ffff:1.2.3.4")).toBe("1.2.3.4");
+    expect(embeddedIpv4("1.2.3.4")).toBeNull();
+  });
+
+  it("jawaban DNS asli TikTok via router NAT64 → diizinkan", () => {
+    const tiktok = ["23.46.152.220", "23.40.63.167", "fd00:aa:bb:2050::1728:3fa7", "fd00:aa:bb:2050::172e:98dc"];
+    expect(evaluateAddresses(tiktok)).toEqual({ ok: true });
+  });
+
+  it("IPv6 privat yang tidak cocok dengan A record publik → ditolak", () => {
+    expect(evaluateAddresses(["23.40.63.167", "fd00::7f00:1"])).toEqual({ ok: false, reason: "private" });
+    expect(evaluateAddresses(["fd00:aa:bb:2050::1728:3fa7"])).toEqual({ ok: false, reason: "private" });
+  });
+
+  it("IPv4 privat tetap ditolak walau ada alamat publik", () => {
+    expect(evaluateAddresses(["142.250.4.100", "127.0.0.1"])).toEqual({ ok: false, reason: "private" });
+    expect(evaluateAddresses([])).toEqual({ ok: false, reason: "dns" });
+    expect(evaluateAddresses(["142.250.4.100", "2404:6800:4003:c11::be"])).toEqual({ ok: true });
   });
 });
 

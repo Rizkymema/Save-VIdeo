@@ -21,7 +21,7 @@ Web app untuk mengunduh video dari **YouTube, TikTok, Instagram, Facebook, X (Tw
 | Mesin download | [yt-dlp](https://github.com/yt-dlp/yt-dlp) + ffmpeg + Deno (JS runtime untuk YouTube) |
 | Validasi | Zod |
 | Test | Vitest (unit, 179 test) · Playwright + axe-core (E2E & aksesibilitas, 22 test) |
-| Deploy | Docker (output `standalone`) + Caddy di VPS, atau UI di Vercel + mesin download di Render/Railway (lihat DEPLOY.md) |
+| Deploy | Vercel (mode direct, cukup `git push`), Docker + Caddy di VPS, atau hybrid (lihat DEPLOY.md) |
 
 ## Menjalankan di komputer sendiri (Windows)
 
@@ -87,7 +87,10 @@ Browser ──POST /api/info──► yt-dlp -J ──► pilihan kualitas (cach
 | `GET /api/jobs/:id/events` | Server-Sent Events berisi progress. |
 | `GET /api/jobs/:id` · `DELETE /api/jobs/:id` | Status (cadangan bila SSE diblokir) · batalkan. |
 | `GET /api/jobs/:id/file` | Unduh file (`Content-Disposition` UTF-8, mendukung Range). |
-| `GET /api/health` | Versi tool, sisa disk, antrean, statistik error per platform. |
+| `GET /api/download?url=&preset=&t=` | Mode direct: proses + kirim file dalam satu request (cookie `sl_dl_<t>` = hasil). |
+| `GET /api/health` | Mode, versi tool, sisa disk, antrean, statistik error per platform. |
+
+**Dua mode unduhan** (`DOWNLOAD_MODE`): `jobs` (default di Docker/VPS — antrean + progress real-time via SSE seperti diagram di atas) dan `direct` (otomatis di Vercel — `GET /api/download` memproses lalu langsung mengirim file dalam satu request, hasil dikabarkan lewat cookie `sl_dl_<token>`; binary yt-dlp & ffmpeg Linux diunduh saat build oleh `scripts/fetch-binaries.mjs`).
 
 Semua error berbentuk `{ error: { code, message, retryable, detail?, params? } }` — UI menerjemahkan `code` ke pesan sesuai bahasa.
 

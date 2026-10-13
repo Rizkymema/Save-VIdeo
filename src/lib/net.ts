@@ -44,13 +44,47 @@ export function isPrivateAddress(address: string): boolean {
 
 export type HostCheck = { ok: true } | { ok: false; reason: "private" | "dns" };
 
+/** 32 bit terakhir alamat IPv6 sebagai IPv4 (pola NAT64/DNS64), mis. fd00:aa::1728:3fa7 → 23.40.63.167. */
+export function embeddedIpv4(ipv6: string): string | null {
+  if (isIP(ipv6) !== 6) return null;
+  const [head, tail = ""] = ipv6.toLowerCase().split("::");
+  const parse = (part: string) => (part ? part.split(":") : []);
+  let groups = [...parse(head), ...parse(tail)];
+  // Bentuk campuran "…:1.2.3.4" → sudah IPv4.
+  const last = groups.at(-1) ?? "";
+  if (last.includes(".")) return isIP(last) === 4 ? last : null;
+  if (ipv6.includes("::")) {
+    const missing = 8 - groups.length;
+    groups = [...parse(head), ...Array<string>(missing).fill("0"), ...parse(tail)];
+  }
+  if (groups.length !== 8) return null;
+  const hi = parseInt(groups[6], 16);
+  const lo = parseInt(groups[7], 16);
+  if (Number.isNaN(hi) || Number.isNaN(lo)) return null;
+  return [hi >> 8, hi & 255, lo >> 8, lo & 255].join(".");
+}
+
+/**
+ * Nilai hasil DNS satu host. Ditolak bila ada alamat privat — kecuali alamat IPv6 privat hasil
+ * sintesis NAT64/DNS64 dari router/ISP, yaitu yang membawa salah satu IPv4 publik host itu sendiri.
+ */
+export function evaluateAddresses(addresses: string[]): HostCheck {
+  if (addresses.length === 0) return { ok: false, reason: "dns" };
+  const publicV4 = new Set(addresses.filter((a) => isIP(a) === 4 && !isPrivateAddress(a)));
+  for (const address of addresses) {
+    if (!isPrivateAddress(address)) continue;
+    const v4 = isIP(address) === 6 ? embeddedIpv4(address) : null;
+    if (v4 && publicV4.has(v4)) continue;
+    return { ok: false, reason: "private" };
+  }
+  return { ok: true };
+}
+
 /** Pastikan hostname hanya mengarah ke IP publik sebelum yt-dlp menghubunginya. */
 export async function checkPublicHost(hostname: string): Promise<HostCheck> {
   try {
     const addresses = await lookup(hostname, { all: true, verbatim: true });
-    if (addresses.length === 0) return { ok: false, reason: "dns" };
-    if (addresses.some((a) => isPrivateAddress(a.address))) return { ok: false, reason: "private" };
-    return { ok: true };
+    return evaluateAddresses(addresses.map((a) => a.address));
   } catch {
     return { ok: false, reason: "dns" };
   }

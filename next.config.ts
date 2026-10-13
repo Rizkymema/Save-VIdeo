@@ -8,9 +8,15 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
 ];
 
+// "jobs" (Docker/VPS: antrean + progress SSE) atau "direct" (Vercel: satu request per unduhan).
+const downloadMode = process.env.DOWNLOAD_MODE || (process.env.VERCEL === "1" ? "direct" : "jobs");
+
 const nextConfig: NextConfig = {
   // Untuk Docker: hasil build mandiri di .next/standalone (lihat Dockerfile).
   output: "standalone",
+  env: { NEXT_PUBLIC_DOWNLOAD_MODE: downloadMode },
+  // Vercel: ikutkan binary yt-dlp & ffmpeg (diunduh scripts/fetch-binaries.mjs) ke function API.
+  outputFileTracingIncludes: { "/api/**/*": ["./vendor/bin/**/*"] },
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

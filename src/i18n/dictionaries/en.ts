@@ -84,6 +84,7 @@ export const en: Dictionary = {
     downloadAria: "Download {label} ({ext})",
     mergeNote: "Video and audio are merged without re-encoding — quality stays original.",
     busy: "Wait for the current download to finish.",
+    tooLarge: "Too large for this server (max {maxMb} MB)",
   },
   progress: {
     title: "Processing {label}",
@@ -99,6 +100,9 @@ export const en: Dictionary = {
     eta: "{time} left",
     cancel: "Cancel",
     canceled: "Download canceled.",
+    preparing: "Preparing the file on the server…",
+    preparingHint: "The file downloads as soon as it's ready. Long videos can take 1–3 minutes — keep this page open.",
+    elapsed: "{time} elapsed",
     steps: { queued: "Queue", download: "Download", process: "Process", done: "Done" },
   },
   ready: {
@@ -110,6 +114,10 @@ export const en: Dictionary = {
     expires: "The file is deleted from our server automatically within {minutes} minutes.",
     ios: "iPhone/iPad: the file goes to the Files app → open it → Share → Save Video.",
     toast: "Done: {name}",
+    directTitle: "Download started!",
+    directSubtitle: "Check your browser's downloads or the Download folder on your device.",
+    again: "Download again",
+    directNote: "The file isn't kept on our server — it's sent straight to your device.",
   },
   errors: {
     title: "Couldn't process this",

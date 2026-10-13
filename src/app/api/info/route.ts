@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { errorResponse, json, readJsonBody } from "@/lib/http";
 import { infoLimiter } from "@/lib/limiters";
@@ -18,6 +19,17 @@ export async function POST(request: Request) {
 
     const { url, platform } = await guardUrl(parsed.data.url);
     const info = await getVideoInfo(url, platform, parsed.data.item ?? 1);
+
+    // Mode direct (Vercel): file harus selesai & terkirim dalam satu function → batasi ukuran.
+    const { DOWNLOAD_MODE, DIRECT_MAX_FILESIZE_MB } = env();
+    if (DOWNLOAD_MODE === "direct") {
+      const maxBytes = DIRECT_MAX_FILESIZE_MB * 1024 * 1024;
+      return json({
+        ...info,
+        limitMb: DIRECT_MAX_FILESIZE_MB,
+        options: info.options.map((o) => (o.approxBytes && o.approxBytes > maxBytes ? { ...o, tooLarge: true } : o)),
+      });
+    }
     return json(info);
   } catch (err) {
     return errorResponse(err, { route: "info" });

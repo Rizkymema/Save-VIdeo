@@ -106,6 +106,7 @@ export const id = {
     downloadAria: "Download {label} ({ext})",
     mergeNote: "Video & audio digabung tanpa kompresi ulang — kualitas tetap asli.",
     busy: "Tunggu unduhan yang sedang berjalan selesai.",
+    tooLarge: "Terlalu besar untuk server ini (maks {maxMb} MB)",
   },
   progress: {
     title: "Memproses {label}",
@@ -121,6 +122,9 @@ export const id = {
     eta: "sisa {time}",
     cancel: "Batalkan",
     canceled: "Unduhan dibatalkan.",
+    preparing: "Menyiapkan file di server…",
+    preparingHint: "File langsung terunduh begitu siap. Video panjang bisa 1–3 menit — jangan tutup halaman ini.",
+    elapsed: "{time} berlalu",
     steps: { queued: "Antre", download: "Unduh", process: "Proses", done: "Selesai" },
   },
   ready: {
@@ -132,6 +136,10 @@ export const id = {
     expires: "File dihapus otomatis dari server dalam {minutes} menit.",
     ios: "iPhone/iPad: file masuk ke app Files → buka → Bagikan → Simpan Video.",
     toast: "Selesai: {name}",
+    directTitle: "Unduhan dimulai!",
+    directSubtitle: "Cek bilah unduhan browser atau folder Download di perangkatmu.",
+    again: "Unduh lagi",
+    directNote: "File tidak disimpan di server — langsung dikirim ke perangkatmu.",
   },
   errors: {
     title: "Tidak bisa diproses",
