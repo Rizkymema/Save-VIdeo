@@ -586,6 +586,7 @@ Kode aplikasi: folder `savelink/` (repo: https://github.com/Rizkymema/Save-VIdeo
 | Akurasi pilihan kualitas | ✅ Pilihan format yt-dlp asli = prediksi UI untuk semua preset (Terbaik `299+140` H.264 1080p60, 4K `315+140`, 1440p `308+140`, 720p `298+140`, 480p `135+140`); estimasi ukuran Shorts 20,0 MB vs file asli 20,07 MB |
 | Hardening (server asli) | ✅ request ke-16/menit → 429 + `Retry-After`; job ke-3 per IP → 429; preset palsu → 422 tanpa menjalankan yt-dlp; body besar → 400; IP privat/`file://`/port/kredensial/`.local` ditolak; batal → proses yt-dlp/ffmpeg mati (4→0) & file `.part` terhapus |
 | UI | ✅ 375 px – 1440 px, gelap & terang, ID & EN: tanpa error konsol & tanpa scroll horizontal |
+| Deploy Vercel (UI) | ✅ **https://save-video-bay.vercel.app** — auto-deploy dari GitHub `main` (`Rizkymema/Save-VIdeo`). Halaman, sitemap, manifest, OG image OK; canonical memakai domain produksi. Mesin download **belum aktif** di sana (`/api/health` → `ok:false`) sampai backend Docker dipasang & `NEXT_PUBLIC_API_BASE` diisi — lihat `DEPLOY.md` Opsi B |
 | Lighthouse | Accessibility **100** · Best Practices **100** · SEO **100** · Performance desktop **97** · mobile **72** (CPU dikalibrasi) / 49 (default). Lighthouse memperingatkan CPU laptop ini lebih lambat dari asumsinya; FCP nyata di browser ±200 ms. **Ukur ulang dengan PageSpeed Insights setelah deploy.** |
 
 ### 15.2 Status per fase
