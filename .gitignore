@@ -50,3 +50,7 @@ next-env.d.ts
 
 # binary Linux untuk Vercel (diunduh saat build)
 /vendor/
+
+# cookies login (rahasia) — jangan pernah di-commit
+cookies.txt
+*_cookies.txt

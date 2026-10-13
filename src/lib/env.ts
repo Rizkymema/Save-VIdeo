@@ -71,6 +71,8 @@ const schema = z.object({
   YTDLP_COOKIES_FILE: str(),
   /** Isi cookies.txt (format Netscape) dalam base64 — untuk serverless yang tidak bisa menyimpan file. */
   YTDLP_COOKIES_BASE64: str(),
+  /** Argumen extractor khusus, misal: "youtube:player_client=mweb,web" atau PO Token. */
+  YTDLP_EXTRACTOR_ARGS: str(),
   YTDLP_AUTO_UPDATE: bool(false),
   /** Header mana yang dipercaya untuk IP asli user (lihat request-ip.ts). */
   TRUST_PROXY_HEADER: z.preprocess(

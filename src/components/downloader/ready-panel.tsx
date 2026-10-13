@@ -31,53 +31,56 @@ export function ReadyPanel({
   const { dict, t, locale } = useI18n();
   const ios = useSyncExternalStore(noop, isAppleMobile, () => false);
   const size = formatBytes(progress.fileSize, locale);
+  const note = direct ? null : t(dict.ready.expires, { minutes: 30 });
 
   return (
-    <div className="rounded-2xl border border-success/30 bg-success/[0.07] p-4 sm:p-5">
-      <div className="flex items-start gap-3">
-        <CheckCircle weight="fill" className="size-7 shrink-0 text-success" aria-hidden />
+    <div className="rounded-xl border border-success/30 bg-success/[0.07] p-3 sm:p-4">
+      <div className="flex items-start gap-2.5">
+        <CheckCircle weight="fill" className="mt-0.5 size-5 shrink-0 text-success" aria-hidden />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold" role="status">
+          <p className="text-sm font-semibold" role="status">
             {direct ? dict.ready.directTitle : dict.ready.title}
           </p>
           {progress.fileName && (
-            <p className="mt-0.5 truncate text-sm text-foreground/90" title={progress.fileName}>
+            <p className="truncate text-xs text-foreground/85" title={progress.fileName}>
               {progress.fileName}
               {size && <span className="font-mono text-muted-foreground"> · {size}</span>}
             </p>
           )}
-          <p className="mt-1 text-sm text-muted-foreground">{direct ? dict.ready.directSubtitle : dict.ready.subtitle}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{direct ? dict.ready.directSubtitle : dict.ready.subtitle}</p>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex">
         {direct ? (
-          <Button size="lg" className="sm:min-w-44" onClick={onSaveAgain}>
+          <Button className="col-span-2 sm:min-w-36" onClick={onSaveAgain}>
             <DownloadSimple weight="bold" aria-hidden />
             {dict.ready.again}
           </Button>
         ) : (
-          <Button asChild size="lg" className="sm:min-w-44">
+          <Button asChild className="col-span-2 sm:min-w-36">
             <a href={fileUrl(jobId)} download={progress.fileName ?? ""}>
               <DownloadSimple weight="bold" aria-hidden />
               {dict.ready.save}
             </a>
           </Button>
         )}
-        <Button variant="outline" size="lg" onClick={onAnotherQuality}>
+        <Button variant="outline" onClick={onAnotherQuality}>
           <ArrowCounterClockwise weight="bold" aria-hidden />
           {dict.ready.another}
         </Button>
-        <Button variant="ghost" size="lg" onClick={onNewLink}>
+        <Button variant="ghost" onClick={onNewLink}>
           <LinkSimple weight="bold" aria-hidden />
           {dict.ready.newLink}
         </Button>
       </div>
 
-      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        {direct ? dict.ready.directNote : t(dict.ready.expires, { minutes: 30 })}
-        {ios && <span className="mt-1 block">{dict.ready.ios}</span>}
-      </p>
+      {(note || ios) && (
+        <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
+          {note}
+          {ios && <span className={note ? "mt-0.5 block" : undefined}>{dict.ready.ios}</span>}
+        </p>
+      )}
     </div>
   );
 }

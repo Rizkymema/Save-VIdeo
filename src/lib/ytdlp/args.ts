@@ -18,26 +18,24 @@ export const MARK = {
 /** Batas item untuk postingan multi-video (carousel). */
 export const MAX_PLAYLIST_ITEMS = 20;
 
-let cookiesPath: string | null | undefined;
-
 /**
  * Path file cookies untuk yt-dlp: YTDLP_COOKIES_FILE, atau isi YTDLP_COOKIES_BASE64 yang ditulis
- * sekali ke /tmp (Vercel tidak punya file permanen). Dipakai mis. agar YouTube tidak meminta
+ * ke /tmp (Vercel tidak punya file permanen). Dipakai mis. agar YouTube tidak meminta
  * "konfirmasi bukan bot" pada IP cloud.
  */
 function cookiesFile(): string | null {
   const e = env();
   if (e.YTDLP_COOKIES_FILE) return e.YTDLP_COOKIES_FILE;
   if (!e.YTDLP_COOKIES_BASE64) return null;
-  if (cookiesPath !== undefined) return cookiesPath;
   try {
     const file = path.join(os.tmpdir(), "savelink-cookies.txt");
-    fs.writeFileSync(file, Buffer.from(e.YTDLP_COOKIES_BASE64, "base64").toString("utf8"), { mode: 0o600 });
-    cookiesPath = file;
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, Buffer.from(e.YTDLP_COOKIES_BASE64, "base64").toString("utf8"), { mode: 0o600 });
+    }
+    return file;
   } catch {
-    cookiesPath = null;
+    return null;
   }
-  return cookiesPath;
 }
 
 /** Argumen dasar untuk setiap pemanggilan yt-dlp. */
@@ -61,6 +59,7 @@ export function baseArgs(): string[] {
   if (e.FFMPEG_PATH) args.push("--ffmpeg-location", executablePath(e.FFMPEG_PATH));
   if (e.YTDLP_CACHE_DIR) args.push("--cache-dir", e.YTDLP_CACHE_DIR);
   if (e.YTDLP_PROXY) args.push("--proxy", e.YTDLP_PROXY);
+  if (e.YTDLP_EXTRACTOR_ARGS) args.push("--extractor-args", e.YTDLP_EXTRACTOR_ARGS);
   const cookies = cookiesFile();
   if (cookies) args.push("--cookies", cookies);
   return args;

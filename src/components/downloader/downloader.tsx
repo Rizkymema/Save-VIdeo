@@ -28,7 +28,7 @@ const fade: HTMLMotionProps<"div"> = {
 };
 
 const CARD =
-  "mt-6 rounded-3xl border border-border bg-card/85 p-4 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.6)] backdrop-blur-md sm:p-6";
+  "mt-5 rounded-2xl border border-border bg-card/85 p-3.5 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.6)] backdrop-blur-md sm:p-5";
 
 // Fitur animasi dimuat terpisah setelah halaman tampil (bundle awal lebih ringan).
 const loadMotionFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
@@ -297,7 +297,7 @@ export function Downloader({ placeholder, below }: { placeholder?: string; below
                     }}
                   />
                 </div>
-                <div className="my-5 h-px bg-border" />
+                <div className="my-3.5 h-px bg-border sm:my-4" />
                 <AnimatePresence mode="wait" initial={false}>
                   <m.div key={jobState.status} {...fade}>
                     {jobPanel}

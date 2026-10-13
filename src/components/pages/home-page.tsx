@@ -3,7 +3,7 @@ import { SupportedPlatforms } from "@/components/downloader/supported-platforms"
 import { HtmlLang } from "@/components/layout/html-lang";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { AmbientBackground, Eyebrow, Faq, Features, HowItWorks, JsonLd } from "@/components/sections/sections";
+import { AmbientBackground, Faq, Features, HowItWorks, JsonLd } from "@/components/sections/sections";
 import { pickClientDict } from "@/i18n/client-dict";
 import { localePath, switchLocalePath, type Locale } from "@/i18n/config";
 import type { PlatformSlug } from "@/i18n/dictionaries/id";
@@ -48,17 +48,16 @@ export function HomePage({ locale, platform }: { locale: Locale; platform?: Plat
       <main id="main" lang={locale === "id" ? "id" : "en"}>
         <section className="relative isolate">
           <AmbientBackground />
-          <div className="mx-auto max-w-6xl px-4 pt-12 pb-10 sm:px-6 sm:pt-20 lg:pt-24">
-            <div className="mx-auto max-w-3xl text-center">
-              <Eyebrow>{dict.hero.eyebrow}</Eyebrow>
-              <h1 className="mt-5 text-[2.25rem] leading-[1.06] font-bold tracking-[-0.035em] sm:text-5xl lg:text-[3.75rem]">
+          <div className="mx-auto max-w-6xl px-4 pt-10 pb-10 sm:px-6 sm:pt-16 lg:pt-20">
+            <div className="mx-auto max-w-2xl text-center">
+              <h1 className="text-[1.875rem] leading-[1.1] font-bold tracking-[-0.03em] sm:text-[2.75rem] lg:text-5xl">
                 {copy?.h1 ?? dict.hero.title} <span className="text-primary">{copy?.highlight ?? dict.hero.highlight}</span>
               </h1>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {copy?.subtitle ?? dict.hero.subtitle}
               </p>
             </div>
-            <div className="mx-auto mt-8 max-w-3xl sm:mt-10">
+            <div className="mx-auto mt-6 max-w-3xl sm:mt-8">
               <Downloader
                 placeholder={copy?.placeholder}
                 below={<SupportedPlatforms locale={locale} dict={dict} active={platform} />}

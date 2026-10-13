@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const ENV_KEYS = ["YTDLP_JS_RUNTIMES", "FFMPEG_PATH", "YTDLP_PROXY", "YTDLP_COOKIES_FILE", "MAX_FILESIZE_MB", "TRUST_PROXY_HEADER"];
+const ENV_KEYS = [
+  "YTDLP_JS_RUNTIMES",
+  "FFMPEG_PATH",
+  "YTDLP_PROXY",
+  "YTDLP_COOKIES_FILE",
+  "YTDLP_COOKIES_BASE64",
+  "YTDLP_EXTRACTOR_ARGS",
+  "MAX_FILESIZE_MB",
+  "TRUST_PROXY_HEADER",
+];
 let saved: Record<string, string | undefined> = {};
 
 beforeEach(() => {
@@ -16,10 +25,11 @@ afterEach(() => {
 });
 
 describe("argumen yt-dlp", () => {
-  it("baseArgs: abaikan config, matikan extractor generic, teruskan JS runtime/ffmpeg/proxy", async () => {
+  it("baseArgs: abaikan config, matikan extractor generic, teruskan JS runtime/ffmpeg/proxy/extractor-args", async () => {
     process.env.YTDLP_JS_RUNTIMES = "deno:/usr/local/bin/deno, node";
     process.env.FFMPEG_PATH = "/usr/bin/ffmpeg";
     process.env.YTDLP_PROXY = "http://proxy:8080";
+    process.env.YTDLP_EXTRACTOR_ARGS = "youtube:player_client=mweb";
     const { baseArgs } = await import("@/lib/ytdlp/args");
     const args = baseArgs();
     expect(args).toContain("--ignore-config");
@@ -27,6 +37,7 @@ describe("argumen yt-dlp", () => {
     expect(args.join(" ")).toContain("--js-runtimes deno:/usr/local/bin/deno --js-runtimes node");
     expect(args.join(" ")).toContain("--ffmpeg-location /usr/bin/ffmpeg");
     expect(args.join(" ")).toContain("--proxy http://proxy:8080");
+    expect(args.join(" ")).toContain("--extractor-args youtube:player_client=mweb");
   });
 
   it("URL selalu setelah `--` (tidak bisa disusupi opsi)", async () => {

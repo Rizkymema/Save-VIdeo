@@ -25,11 +25,11 @@ export function VideoPreviewCard({
 
   return (
     <div>
-      <div className={cn("flex gap-4", portrait ? "flex-row items-start" : "flex-col sm:flex-row sm:items-start")}>
+      <div className="flex items-start gap-3 sm:gap-4">
         <div
           className={cn(
-            "relative shrink-0 overflow-hidden rounded-2xl bg-secondary ring-1 ring-border",
-            portrait ? "aspect-[9/16] w-24 sm:w-28" : "aspect-video w-full sm:w-60",
+            "relative shrink-0 overflow-hidden rounded-xl bg-secondary ring-1 ring-border",
+            portrait ? "aspect-[9/16] w-16 sm:w-20" : "aspect-video w-28 sm:w-40",
           )}
         >
           <Thumbnail
@@ -37,31 +37,33 @@ export function VideoPreviewCard({
             src={info.thumbnail}
             alt={t(dict.preview.thumbAlt, { title: info.title })}
             platform={info.platform}
-            sizes={portrait ? "112px" : "(max-width: 640px) 100vw, 240px"}
+            sizes={portrait ? "80px" : "160px"}
           />
           {duration && (
-            <span className="absolute right-2 bottom-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-[11px] font-medium text-white tabular-nums">
+            <span className="absolute right-1 bottom-1 rounded bg-black/75 px-1 py-px font-mono text-[10px] font-medium text-white tabular-nums">
               {duration}
             </span>
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <PlatformIcon platform={info.platform} brandColor className="size-3.5" />
             {platformName}
           </p>
-          <h2 className="line-clamp-3 text-lg leading-snug font-semibold tracking-tight sm:text-xl">{info.title}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <h2 className="mt-1 line-clamp-2 text-[15px] leading-snug font-semibold tracking-tight sm:text-base">
+            {info.title}
+          </h2>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
             {info.uploader && (
-              <span className="inline-flex min-w-0 items-center gap-1.5">
-                <User className="size-4 shrink-0" aria-hidden />
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <User className="size-3.5 shrink-0" aria-hidden />
                 <span className="truncate">{t(dict.preview.by, { name: info.uploader })}</span>
               </span>
             )}
             {duration && (
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="size-4" aria-hidden />
+              <span className="inline-flex items-center gap-1">
+                <Clock className="size-3.5" aria-hidden />
                 {t(dict.preview.duration, { time: duration })}
               </span>
             )}

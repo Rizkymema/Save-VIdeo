@@ -25,15 +25,6 @@ export function AmbientBackground() {
   );
 }
 
-export function Eyebrow({ children }: { children: string }) {
-  return (
-    <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
-      <Sparkle weight="fill" className="size-3.5 text-primary" aria-hidden />
-      {children}
-    </p>
-  );
-}
-
 const STEP_ICONS: IconType[] = [CopySimple, ClipboardText, DownloadSimple];
 
 export function HowItWorks({ dict }: { dict: Dictionary }) {
