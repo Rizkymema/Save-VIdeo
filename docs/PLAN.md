@@ -586,7 +586,7 @@ Kode aplikasi: folder `savelink/` (repo: https://github.com/Rizkymema/Save-VIdeo
 | Akurasi pilihan kualitas | ✅ Pilihan format yt-dlp asli = prediksi UI untuk semua preset (Terbaik `299+140` H.264 1080p60, 4K `315+140`, 1440p `308+140`, 720p `298+140`, 480p `135+140`); estimasi ukuran Shorts 20,0 MB vs file asli 20,07 MB |
 | Hardening (server asli) | ✅ request ke-16/menit → 429 + `Retry-After`; job ke-3 per IP → 429; preset palsu → 422 tanpa menjalankan yt-dlp; body besar → 400; IP privat/`file://`/port/kredensial/`.local` ditolak; batal → proses yt-dlp/ffmpeg mati (4→0) & file `.part` terhapus |
 | UI | ✅ 375 px – 1440 px, gelap & terang, ID & EN: tanpa error konsol & tanpa scroll horizontal |
-| Deploy Vercel (UI) | ✅ **https://save-video-bay.vercel.app** — auto-deploy dari GitHub `main` (`Rizkymema/Save-VIdeo`). Halaman, sitemap, manifest, OG image OK; canonical memakai domain produksi. Mesin download **belum aktif** di sana (`/api/health` → `ok:false`) sampai backend Docker dipasang & `NEXT_PUBLIC_API_BASE` diisi — lihat `DEPLOY.md` Opsi B |
+| Deploy Vercel (lengkap) | ✅ **https://save-video-bay.vercel.app** — auto-deploy dari GitHub `main`; **mode direct**: yt-dlp + ffmpeg dibundel ke function (region sin1), `/api/health` → `ok:true`. Uji nyata di Vercel: TikTok ✅ 10 dtk · Instagram ✅ 11 dtk · Facebook ✅ 6 dtk · X ✅ 58 dtk (17 MB) · YouTube ❌ diblokir ("not a bot" pada IP Vercel) → aktifkan dengan `YTDLP_COOKIES_BASE64` atau `YTDLP_PROXY` (DEPLOY.md bagian 13) |
 | Lighthouse | Accessibility **100** · Best Practices **100** · SEO **100** · Performance desktop **97** · mobile **72** (CPU dikalibrasi) / 49 (default). Lighthouse memperingatkan CPU laptop ini lebih lambat dari asumsinya; FCP nyata di browser ±200 ms. **Ukur ulang dengan PageSpeed Insights setelah deploy.** |
 
 ### 15.2 Status per fase
@@ -611,7 +611,8 @@ Kode aplikasi: folder `savelink/` (repo: https://github.com/Rizkymema/Save-VIdeo
 - **Performa**: animasi via `LazyMotion` (dimuat setelah halaman tampil), prefetch link sekunder dimatikan, font mono tidak di-preload → desktop 81→97.
 - **TikTok** butuh `curl_cffi` (impersonation browser) — ditambahkan ke instruksi setup; binary resmi yt-dlp di Docker sudah menyertakannya. Preset M4A memakai trek AAC dari video bila audio terpisah berformat MP3 (tanpa transcode).
 - **Service worker** tidak menyentuh `/api/` (unduhan file besar langsung ke jaringan) — ditemukan lewat E2E.
-- **Vercel**: sesuai permintaan, UI bisa di-deploy di Vercel (terhubung GitHub). Mesin download tetap butuh server Docker (tanpa yt-dlp/ffmpeg, batas durasi function, job di memori, IP AWS sering diblokir YouTube) → ditambahkan mode hybrid `NEXT_PUBLIC_API_BASE` + `CORS_ORIGINS`; tanpa backend, UI menampilkan pesan "mesin download belum aktif".
+- **Vercel (mode direct)**: atas permintaan, backend juga di Vercel. Karena function serverless tidak bisa menyimpan job antar-request, ditambahkan mode `direct`: `GET /api/download` memproses lalu langsung mengirim file dalam satu request (hasil lewat cookie `sl_dl_<token>`), binary Linux diunduh saat build. Batas: total 300 dtk & 250 MB per unduhan (Hobby), tanpa persen progress. Mode `jobs` (Docker/VPS) tetap tersedia; mode hybrid (`NEXT_PUBLIC_API_BASE` + CORS) juga.
+- **Anti-SSRF & NAT64**: alamat IPv6 hasil NAT64 router (membawa IPv4 publik host yang sama) tidak lagi ditolak — ditemukan saat TikTok gagal di jaringan IPv6.
 - **Tambahan**: kode error `FORMAT_UNAVAILABLE`/`VERIFICATION_FAILED`, detail `no_audio` (video bisu + MP3) & `network`; endpoint `GET/DELETE /api/jobs/:id`; dukungan HTTP Range; alert webhook error rate; script `smoke`, `screenshots`, `icons`, `start:standalone`.
 
 ### 15.4 Risiko yang masih ada

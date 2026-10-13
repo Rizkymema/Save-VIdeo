@@ -35,7 +35,16 @@ describe("sinyal cookie mode direct", () => {
   });
 });
 
-const ENV_KEYS = ["VERCEL", "DOWNLOAD_MODE", "YTDLP_JS_RUNTIMES", "YTDLP_CACHE_DIR", "YTDLP_PATH", "FFMPEG_PATH"];
+const ENV_KEYS = [
+  "VERCEL",
+  "DOWNLOAD_MODE",
+  "YTDLP_JS_RUNTIMES",
+  "YTDLP_CACHE_DIR",
+  "YTDLP_PATH",
+  "FFMPEG_PATH",
+  "YTDLP_COOKIES_FILE",
+  "YTDLP_COOKIES_BASE64",
+];
 let saved: Record<string, string | undefined> = {};
 
 describe("default lingkungan", () => {
@@ -72,6 +81,17 @@ describe("default lingkungan", () => {
     process.env.DOWNLOAD_MODE = "jobs";
     const { env } = await import("@/lib/env");
     expect(env().DOWNLOAD_MODE).toBe("jobs");
+  });
+
+  it("YTDLP_COOKIES_BASE64 ditulis ke file sementara & diteruskan ke --cookies", async () => {
+    const cookies = "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tTRUE\t0\tPREF\tf6=40000000\n";
+    process.env.YTDLP_COOKIES_BASE64 = Buffer.from(cookies).toString("base64");
+    const { baseArgs } = await import("@/lib/ytdlp/args");
+    const args = baseArgs();
+    const file = args[args.indexOf("--cookies") + 1];
+    expect(file).toMatch(/savelink-cookies\.txt$/);
+    const { readFileSync } = await import("node:fs");
+    expect(readFileSync(file, "utf8")).toBe(cookies);
   });
 
   it("argumen: --cache-dir & batas ukuran mode direct", async () => {

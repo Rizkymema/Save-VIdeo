@@ -174,6 +174,31 @@ Cek: buka situs Vercel → tempel link → info video muncul. Di DevTools → Ne
 2. Cek `https://DOMAIN-VERCEL/api/health` → `"ok": true`, `"mode": "direct"`, versi `ytdlp` & `ffmpeg`, `jsRuntime: "node …"`.
 3. Opsional (*Settings → Environment Variables*): `DIRECT_MAX_FILESIZE_MB`, `DIRECT_TIMEOUT_SEC`, `YTDLP_PROXY` (bila YouTube memblokir IP Vercel), `NEXT_PUBLIC_SITE_URL` (domain custom). Lalu *Redeploy*.
 
+### Hasil uji nyata di Vercel (sin1, 13 Okt 2026)
+
+| Platform | Hasil |
+|---|---|
+| TikTok | ✅ 10 dtk — H.264 576p + AAC, tanpa watermark |
+| Instagram Reel | ✅ 11 dtk — H.264 720p |
+| Facebook | ✅ 6 dtk |
+| X / Twitter | ✅ 58 dtk — H.264 720p + AAC (17 MB, HLS di-merge) |
+| YouTube | ❌ `Sign in to confirm you're not a bot` — YouTube memblokir IP Vercel/AWS |
+
+### Mengaktifkan YouTube di Vercel
+
+Pilih salah satu:
+
+**a) Cookies akun YouTube (gratis)** — gunakan **akun Google cadangan**, karena YouTube bisa menandai/memblokir akun yang dipakai untuk bot.
+1. Buka jendela privat Firefox → login YouTube dengan akun cadangan → buka satu video.
+2. Ekspor cookies: `yt-dlp --cookies-from-browser firefox --cookies cookies.txt --skip-download "https://www.youtube.com/watch?v=jNQXAC9IVRw"` (atau ekstensi *cookies.txt* untuk Firefox), lalu tutup jendela privat itu (agar cookies tidak dirotasi).
+3. Ubah ke base64 & salin: PowerShell `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cookies.txt")) | Set-Clipboard`.
+4. Vercel → *Settings → Environment Variables* → `YTDLP_COOKIES_BASE64` = (tempel) → *Redeploy*.
+5. Cookies bisa kedaluwarsa (berminggu–bulan); ulangi langkah 1–4 bila YouTube kembali gagal.
+
+**b) Proxy residensial (berbayar)** — isi `YTDLP_PROXY=http://user:pass@host:port`. Semua lalu lintas video ikut lewat proxy (biaya per GB).
+
+**c) YouTube lewat server sendiri** — opsi A/B (IP VPS/rumah), UI tetap di Vercel.
+
 Cara kerja di browser: tombol kualitas membuka `/api/download?...` sebagai navigasi biasa. Server memproses, lalu mengirim file (`Content-Disposition: attachment`) atau — bila gagal — menjawab `204` sehingga halaman tidak berpindah. Hasilnya dikabarkan lewat cookie singkat `sl_dl_<token>` yang dipantau halaman (lihat `src/lib/download-cookie.ts`). File sementara di `/tmp` dihapus segera setelah terkirim.
 
 ## 14. Checklist go-live
