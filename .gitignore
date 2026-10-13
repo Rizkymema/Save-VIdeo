@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# contoh konfigurasi boleh di-commit
+!.env.example
+
+# hasil test & laporan
+/test-results/
+/playwright-report/
+/blob-report/

@@ -1,0 +1,48 @@
+# SaveLink di VPS: app (Next.js + yt-dlp + ffmpeg) di belakang Caddy (HTTPS otomatis).
+#   1) cp .env.example .env   → isi DOMAIN dan NEXT_PUBLIC_SITE_URL
+#   2) docker compose up -d --build
+# Panduan lengkap: DEPLOY.md
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?isi NEXT_PUBLIC_SITE_URL di .env}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    image: savelink:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Caddy menambahkan IP asli user di ujung kanan X-Forwarded-For.
+      TRUST_PROXY_HEADER: x-forwarded-for
+    volumes:
+      - savelink-tmp:/tmp/savelink
+    expose:
+      - "3000"
+    # Sesuaikan dengan VPS (rekomendasi minimal 2 vCPU / 4 GB RAM).
+    mem_limit: 3g
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?isi DOMAIN di .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  savelink-tmp:
+  caddy-data:
+  caddy-config:

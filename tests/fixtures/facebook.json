@@ -1,0 +1,40 @@
+{
+ "_type": "video",
+ "id": "762326434486859",
+ "title": "CAPSTONE mission",
+ "fulltitle": "CAPSTONE mission",
+ "uploader": "NASA Technology",
+ "uploader_id": "100064770034135",
+ "thumbnail": "https://scontent.fcgk33-1.fna.fbcdn.net/thumb.jpg",
+ "duration": 4.36,
+ "webpage_url": "https://www.facebook.com/NASATechnology/videos/capstone-mission/762326434486859/",
+ "extractor_key": "Facebook",
+ "resolution": null,
+ "ext": "mp4",
+ "formats": [
+  {
+   "format_id": "sd",
+   "ext": "mp4",
+   "protocol": "https",
+   "resolution": null,
+   "tbr": null,
+   "abr": null,
+   "vbr": null,
+   "filesize_approx": null,
+   "dynamic_range": "SDR",
+   "quality": -3
+  },
+  {
+   "format_id": "hd",
+   "ext": "mp4",
+   "protocol": "https",
+   "resolution": null,
+   "tbr": null,
+   "abr": null,
+   "vbr": null,
+   "filesize_approx": null,
+   "dynamic_range": "SDR",
+   "quality": -2
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+.git
+.github
+node_modules
+.next
+out
+test-results
+playwright-report
+coverage
+tests
+*.log
+npm-debug.log*
+.DS_Store
+# rahasia lokal tidak boleh masuk image
+.env*
+!.env.example

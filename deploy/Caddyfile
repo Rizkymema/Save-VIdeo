@@ -1,0 +1,24 @@
+# Caddy: HTTPS otomatis (Let's Encrypt) untuk domain di variabel DOMAIN.
+{$DOMAIN} {
+	# Next.js sudah mengompres HTML/JS; jangan kompres ulang (bisa menahan stream SSE).
+	reverse_proxy app:3000 {
+		# Kirim progress SSE & file besar segera, tanpa buffer.
+		flush_interval -1
+		header_up X-Real-IP {remote_host}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Arahkan www ke domain utama.
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

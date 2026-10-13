@@ -1,26 +1,172 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Dark mode via class `.dark` di <html> (default: dark, lihat layout.tsx). */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-drift: drift 22s ease-in-out infinite alternate;
+  --animate-drift-slow: drift 30s ease-in-out infinite alternate-reverse;
+  --animate-indeterminate: indeterminate 1.4s var(--ease-out-expo) infinite;
+
+  @keyframes drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(4%, 6%, 0) scale(1.08);
+    }
+    100% {
+      transform: translate3d(-5%, 2%, 0) scale(0.96);
+    }
+  }
+
+  @keyframes indeterminate {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(250%);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Light (tema alternatif). Nilai sesuai design-system/MASTER.md, kontras sudah dicek WCAG AA. */
+:root {
+  color-scheme: light;
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #c2410c;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #57534e;
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626;
+  --success: #15803d;
+  --info: #2563eb;
+  --border: #e7e5e4;
+  --input: #d6d3d1;
+  --ring: #c2410c;
+  --radius: 0.75rem;
+  --glow-a: rgb(234 88 12 / 0.16);
+  --glow-b: rgb(37 99 235 / 0.08);
+  --grid-line: rgb(28 25 23 / 0.05);
+}
+
+/* Dark (default). Tidak memakai #000 murni. */
+.dark {
+  color-scheme: dark;
+  --background: #141110;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
+  /* Teks di atas oranye WAJIB gelap: #1C1917 di #F97316 ≈ 5.9:1 (putih hanya ≈ 2.9:1). */
+  --primary: #f97316;
+  --primary-foreground: #1c1917;
+  --secondary: #292524;
+  --secondary-foreground: #fafaf9;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #fafaf9;
+  --destructive: #f87171;
+  --success: #22c55e;
+  --info: #3b82f6;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.12);
+  --ring: #f97316;
+  --glow-a: rgb(249 115 22 / 0.2);
+  --glow-b: rgb(59 130 246 / 0.12);
+  --grid-line: rgb(255 255 255 / 0.04);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  a[href],
+  summary {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
